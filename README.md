@@ -97,7 +97,7 @@ imports: [
 </span>
 </pre>
 
-### 3- use **SolWalletService** in a component
+### 3- use **SolWalletsService** in a component
 
 Example in the appComponent:
 <br>*the functions in the component are called buy a click event in the html template*
