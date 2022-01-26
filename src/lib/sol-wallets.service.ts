@@ -20,12 +20,12 @@ export class SolWalletsService {
   setCluster( cluster : Cluster ){
     Wallet.cluster = cluster ;
   }
-  async connectWallet() : Promise<Wallet> {
+  async connect() : Promise<Wallet> {
       this.selected = this.wallets[0] ;
       await this.wallets[0].connect();
       return this.selected
   }
-  async disconnectWallet(){
+  async disconnect(){
     if ( this.selected ){
       return this.selected.disconnect();
     }
@@ -38,7 +38,7 @@ export class SolWalletsService {
     }
     throw Error('No wallet selected.');
   }
-  async sendTransactinon( destinationPubkey : string, sols : number ) : Promise<string | null | undefined> {
+  async sendTransaction( destinationPubkey : string, sols : number ) : Promise<string | null | undefined> {
     if ( this.selected ){
       let signature =  this.selected.sendTransaction(destinationPubkey, sols) ;
       return signature ;
