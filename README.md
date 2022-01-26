@@ -2,7 +2,7 @@
 ## Angular library for Web Wallets on Solana Blockchain
 
 <em>
-<h3> news on 0.0.5
+<h3> news on 0.0.6
 <br>Add signMessage function
 <br>Update readme
 </h3>
@@ -42,7 +42,7 @@ Open terminal in your Angular project root folder and run:
 <br>
 </p>
 
-<pre>npm i --save sol-wallets</pre>
+<pre>npm i --save angular-sol-wallets</pre>
 
 <p>
 If needed, install the peer dependencies
