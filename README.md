@@ -2,10 +2,12 @@
 ## Angular library for Web Wallets on Solana Blockchain
 
 <em>
-<h3> news on 0.0.5</h3>
-Add signMessage function
+<h3> news on 0.0.5
+<br>Add signMessage function
+<br>Update readme
+</h3>
 </em>
-
+<br>
 <p>
 Version 0.0.5 <strong>only Phantom is implemented</strong> 
 <br>
