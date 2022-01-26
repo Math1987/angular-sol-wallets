@@ -26,6 +26,9 @@ export class Wallet {
     async disconnect(){
         return true ;
     }
+    async signMessage(message : string ) : Promise<string | null | undefined>{
+        return null ;
+    }
     async sendTransaction( destinationPublickKey : string, sol : number ) : Promise<string | undefined | null > {
         return null ;
     }

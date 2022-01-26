@@ -31,6 +31,13 @@ export class SolWalletsService {
     }
     throw Error('No wallet selected.');
   }
+  async signMessage( message : string ) : Promise<string | null | undefined> {
+    if ( this.selected ){
+      let signature =  this.selected.signMessage( message ); ;
+      return signature ;
+    }
+    throw Error('No wallet selected.');
+  }
   async sendTransactinon( destinationPubkey : string, sols : number ) : Promise<string | null | undefined> {
     if ( this.selected ){
       let signature =  this.selected.sendTransaction(destinationPubkey, sols) ;

@@ -1,11 +1,18 @@
 # SolWallets
 ## Angular library for Web Wallets on Solana Blockchain
 
+<em>
+<h3> news on 0.0.5</h3>
+Add signMessage function
+</em>
+
 <p>
-Version 0.0.1 <strong>only Phantom is implemented</strong> 
+Version 0.0.5 <strong>only Phantom is implemented</strong> 
 <br>
 This library was generated with <a href= "https://github.com/angular/angular-cli">Angular CLI</a> version 12.1.0.
 </p>
+
+## DESCRIPTION
 
 <p>
 Provide a service for using easily wallets on your web Angular project:
@@ -13,11 +20,13 @@ Provide a service for using easily wallets on your web Angular project:
 <br>
 
 <span style="color:lightBlue"> 
-connect()
+connect() => Wallet Object
 <br>
-disconnect()
+disconnect() => boolean
 <br>
-sendTransaction( address : string, sols : number)
+signMessage( message : string) => signature (as string)
+<br>
+sendTransaction( address : string, sols : number) => signature (as string)
 </span>
 </p>
 
@@ -41,9 +50,6 @@ If needed, install the peer dependencies
 You may have to add the global variable in *prolyfills.ts* file 
 
 <pre>
-/***************************************************************************************************
- * APPLICATION IMPORTS
- */
  (window as any)['global'] = window;
 </pre>
 
@@ -89,8 +95,6 @@ imports: [
 </span>
 </pre>
 
-
-
 ### 3- use **SolWalletService** in a component
 
 Example in the appComponent:
@@ -105,7 +109,6 @@ import { Component } from '@angular/core';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
-<span style="color:lightGray">
 export class AppComponent {
   constructor(
     <span style="color:white">private solWalletS : SolWalletsService</span>
@@ -113,23 +116,28 @@ export class AppComponent {
 
   connect(){
     <span style="color:white">this.solWalletS.connectWallet().then( wallet => {
-      console.log("Wallet connected successfully.");
-      console.log("public address is", wallet.publicKey );
+      console.log("Wallet connected successfully with this address:", wallet.publicKey);
     }).catch(err => {
-        console.log("Error connecting wallet", err );
+      console.log("Error connecting wallet", err );
     })</span>
   }
   disconnect(){
     <span style="color:white">this.solWalletS.disconnectWallet();</span>
   }
-  send(){
+  signMessage(){
+     <span style="color:white">this.solWalletS.signMessage("HELLO WORLD!").then( signature => {
+      console.log('Message signed:', signature);
+    }).catch( err => {
+      console.log('err transaction', err );
+    })</span>
+  }
+  sendTransactinon(){
     <span style="color:white">this.solWalletS.sendTransactinon("FfYeVASAm2nDzcC5ckorecT1u8ybFwrCZnMi8sXrtf3P", 0.01 ).then( signature => {
-      //the signature of the confirmed transaction
+      console.log('Transaction successfully opered:', signature);
     }).catch( err => {
       console.log('Error transaction', err );
     });</span>
   }
-</span>
 </pre>
 
 

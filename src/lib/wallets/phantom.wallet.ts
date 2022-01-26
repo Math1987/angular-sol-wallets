@@ -6,6 +6,8 @@ import {
     LAMPORTS_PER_SOL
 } from "@solana/web3.js"
 
+import * as web3 from "@solana/web3.js" ;
+
 export class PhantomWallet extends Wallet {
 
     constructor(){
@@ -63,6 +65,17 @@ export class PhantomWallet extends Wallet {
         let result = await Wallet.solanaConnection?.confirmTransaction(signature!, "singleGossip" )! ;
         return signature ;
 
+    }
+    async signMessage(message : string ){
+        const encodedMessage = new TextEncoder().encode(message);
+        //@ts-ignore
+        const signedMessage = await this.provider.request({
+            method : "signMessage",
+            params : {
+                message : encodedMessage
+            }
+        });
+        return signedMessage.signature ;
     }
 
 

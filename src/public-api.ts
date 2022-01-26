@@ -3,5 +3,6 @@
  */
 
 export * from './lib/sol-wallets.service';
+export * from './lib/sol-wallets.component';
 export * from './lib/sol-wallets.module';
 export * from './lib/wallets/wallet' ;
