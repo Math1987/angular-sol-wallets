@@ -12,5 +12,11 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/Math1987/angular-sol-wallets"
-  }
+  },
+  "keywords": [
+    "solana",
+    "angular",
+    "phantom",
+    "wallets"
+  ]
 }
