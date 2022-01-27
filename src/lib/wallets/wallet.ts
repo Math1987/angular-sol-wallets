@@ -6,6 +6,15 @@ import {
     Transaction
 }from "@solana/web3.js" ;
 
+
+const testTimeOut = () : Promise<any> => { 
+    return new Promise( (resolve, reject) => {
+        setTimeout(() =>{
+            resolve(true);
+        }, 3000 );
+    });
+};
+
 export class Wallet {
 
     static solanaConnection : Connection | null = null ;
@@ -24,7 +33,10 @@ export class Wallet {
         return this ;
     }
     async disconnect(): Promise<boolean> {
-        throw Error( "No wallet.")
+        //@ts-ignore
+        await Wallet.provider.disconnect();
+        Wallet.provider = null ;
+        return true ;
     }
     async signMessage(message : string ) : Promise<string | null | undefined>{
         throw Error( "No wallet.")
@@ -34,9 +46,10 @@ export class Wallet {
         throw Error( "No wallet.")
     }
     protected async sendTransfer( transaction : Transaction ): Promise<string> {
-        throw Error( "No wallet.")
+        return await Wallet.solanaConnection!.sendRawTransaction(transaction.serialize());
     }
     async signAndSendTransfer( destinationPubkey: string, sols : number) : Promise<string> {
+        await this.connect();
         const transaction = await this.signTransfer(destinationPubkey, sols);
         const signature = await this.sendTransfer(transaction);
         await Wallet.solanaConnection?.confirmTransaction(signature!, "singleGossip" )! ;

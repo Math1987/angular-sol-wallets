@@ -1,26 +1,32 @@
-# SolWallets
+# Angular Sol Wallets
 ## Angular library for Web Wallets on Solana Blockchain
 
 <em>
-<h3> news on 0.0.8
-<br>Add signMessage function
-<br>Update readme
-</h3>
+<h2> news on 0.0.9<h2>
+
+  <ul>
+    <li  style="color:darkgreen">Add signTransfer function to send a buffer on the server if you prefer to make the transfer from your server</li>
+    <li>Auto-connection to the wallet if not yet connected when using transfer method or other</li>
+    <li>Add comments & update readme </li>
+    <li style="color:darkred">Depreciate <em>sendTransaction</em>, use <em>signAndSendTransfer</em> instead</li>
+  </ul>
+
 </em>
-<br>
+
 <p>
-<strong>only Phantom is implemented</strong> 
+<strong>Only Phantom is implemented</strong> 
 <br>
 This library was generated with <a href= "https://github.com/angular/angular-cli">Angular CLI</a> version 12.1.0.
 </p>
 
 ## DESCRIPTION
-
-<p>
+<h3>
 Provide a service for using easily wallets on your web Angular project:
-<br><em>basic async functions:</em>
+<br><em>overview of all (async) functions:</em>
 <br>
-
+</h3>
+<br>
+<p>
 <span style="color:lightBlue"> 
 connect() => Wallet Object
 <br>
@@ -28,10 +34,12 @@ disconnect() => boolean
 <br>
 signMessage( message : string) => signature (as string)
 <br>
-sendTransaction( address : string, sols : number) => signature (as string)
+signTransfer( address : string, sols : number) => Buffer
+<br>
+signAndSendTransfer( address : string, sols : number) => signature (as string)
 </span>
 </p>
-
+<br>
 <h2>
 USAGE
 </h2>
@@ -102,17 +110,12 @@ imports: [
 Example in the appComponent:
 <br>*the functions in the component are called buy a click event in the html template*
 
-<pre style="color : gray" >
-import { Component } from '@angular/core';
+<pre style="color : gray" >...
 <span style="color:white">import { SolWalletsService, Wallet } from "angular-sol-wallets" ;</span>
-
-@Component({
-  selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss']
-})
+...
 export class AppComponent {
   constructor(
+    private httpClient : HttpClient,
     <span style="color:white">private solWalletS : SolWalletsService</span>
     ){}
 
@@ -133,12 +136,22 @@ export class AppComponent {
       console.log('err transaction', err );
     })</span>
   }
-  sendTransaction(){
-    <span style="color:white">this.solWalletS.sendTransaction("FfYeVASAm2nDzcC5ckorecT1u8ybFwrCZnMi8sXrtf3P", 0.01 ).then( signature => {
-      console.log('Transaction successfully opered:', signature);
+  makeATransfer( myCompanyPublicKey : string, solAmmount : number){
+    <span style="color:white">this.solWalletS.signAndSendTransfer(myCompanyPublicKey, solAmmount ).then( signature => {
+      console.log('Transfer successfully opered:', signature);
     }).catch( err => {
       console.log('Error transaction', err );
     });</span>
+  }
+  sendTransferToServer( myCompanyPublicKey : string, solAmmount : number){
+    <span style="color:white">this.solWalletS.signTransfer(myCompanyPublicKey, solAmmount ).then( buffer => {
+        this.httpClient.post('https://myserver.io/myAPI/makeTransfer', { transferRow : buffer }).subscribe( res => {
+          console.log('Transfer successfully opered:', res.signature);
+        });
+    }).catch( err => {
+      console.log('Error transaction', err );
+    });</span>
+    httpClient
   }
 </pre>
 

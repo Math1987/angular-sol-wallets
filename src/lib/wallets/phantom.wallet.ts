@@ -22,25 +22,23 @@ export class PhantomWallet extends Wallet {
     async connect() : Promise<Wallet> {
         await super.connect();
         //@ts-ignore
-        await window.solana.connect();
-        //@ts-ignore
-        if ( window.solana.publicKey ){
+        if ( Wallet.provider !== null || Wallet.provider !== window.solana ){
             //@ts-ignore
-            this.provider = window.solana ;
+            await window.solana.connect();
             //@ts-ignore
-            this.publicKey = new PublicKey(this.provider.publicKey) ;
+            if ( window.solana.publicKey ){
+                //@ts-ignore
+                this.provider = window.solana ;
+                //@ts-ignore
+                this.publicKey = new PublicKey(this.provider.publicKey) ;
+            }
         }
         return this ;
     }
     
-    async disconnect(): Promise<boolean> {
-        //@ts-ignore
-        await this.provider.disconnect();
-        return true ;
-    }
+
 
     async signTransfer(destinationPubkey: string, sol: number): Promise<Transaction> {
-     
         const payerPubKey = this.publicKey ;
         const destinationPubKey = new PublicKey(destinationPubkey) ;
         const transaction = new Transaction();
@@ -57,10 +55,13 @@ export class PhantomWallet extends Wallet {
         console.log(nt) ;
         return nt ;
     }
-    protected async sendTransfer( transaction : Transaction ): Promise<string> {
-        return await Wallet.solanaConnection!.sendRawTransaction(transaction.serialize());
-    }
 
+    /**
+     * depreciated
+     * @param destinationPublickKey 
+     * @param sol 
+     * @returns 
+     */
     async sendTransaction( destinationPublickKey : string, sol : number ){
 
         const payerPubKey = this.publicKey ;
