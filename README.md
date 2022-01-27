@@ -1,18 +1,16 @@
 # Angular Sol Wallets
-## Angular library for Web Wallets on Solana Blockchain
+## Library for Web Wallets on Solana Blockchain
 
 <em>
-<h2> news on 0.0.10<h2>
-
+<p> news on 0.0.11
   <ul>
     <li style="color:darkgreen">Add <strong>signTransfer</strong> function to send a buffer on the server if you prefer to make the transfer from your server</li>
     <li>Auto-connection to the wallet if not yet connected when using transfer method or other</li>
     <li>Add comments & update readme </li>
     <li style="color:darkred">Depreciate <em>sendTransaction</em>, use <em>signAndSendTransfer</em> instead</li>
   </ul>
-
 </em>
-
+</p>
 <p>
 <strong>Only Phantom is implemented</strong> 
 <br>
