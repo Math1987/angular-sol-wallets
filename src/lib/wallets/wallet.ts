@@ -33,9 +33,6 @@ export class Wallet {
         return this ;
     }
     async disconnect(): Promise<boolean> {
-        //@ts-ignore
-        await Wallet.provider.disconnect();
-        Wallet.provider = null ;
         return true ;
     }
     async signMessage(message : string ) : Promise<string | null | undefined>{

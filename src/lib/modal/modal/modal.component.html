@@ -1,0 +1,12 @@
+<div class="card">
+
+    <h3 class="title" *ngIf="title">{{title}}</h3>
+    <div *ngFor="let wallet of wallets ; let i = index" class="wallet" (click)="select(i)">
+
+        <img class="icon" [src]="wallet.icon" alt="">
+        <div class="name">{{wallet.name}}</div>
+
+    </div>
+
+</div>
+
