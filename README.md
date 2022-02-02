@@ -2,11 +2,12 @@
 ## Library for Web Wallets on Solana Blockchain
 
 <em>
-<p> news on 0.0.11
+<p> news on 0.0.12
   <ul>
-    <li style="color:darkgreen">Add <strong>signTransfer</strong> function to send a buffer on the server if you prefer to make the transfer from your server</li>
-    <li>Auto-connection to the wallet if not yet connected when using transfer method or other</li>
-    <li>Add comments & update readme </li>
+    <li style="color:darkgreen">Add <strong>setCommitment</strong> set the commitment for the transfers</li>
+    <li style="color:darkgreen">Add an optional callback function in<strong> signAndSendTransfer</strong> used before verification of transfer when user have signed it</li>
+    <li style="color:darkgreen">Add <strong>getPublicKey</strong> to get the PublicKey object dirrectly from the service</li>
+    <li>commitment is set as "finalized" instead of "singleGossip"</li>
     <li style="color:darkred">Depreciate <em>sendTransaction</em>, use <em>signAndSendTransfer</em> instead</li>
   </ul>
 </em>
@@ -34,7 +35,15 @@ signMessage( message : string) => signature (as string)
 <br>
 signTransfer( address : string, sols : number) => Buffer
 <br>
-signAndSendTransfer( address : string, sols : number) => signature (as string)
+signAndSendTransfer( address : string, sols : number, signedByUser? : CallableFunction ) => signature (as string) => signature (as string)
+<br>
+<br>
+setCluster( cluster : Cluster ) <em>default = "devnet"</em>
+<br>
+setCommitment( commitment : Commitment ) <em>default = "finalized"</em>
+<br>
+getPublicKey() => PublicKey
+
 </span>
 </p>
 <br>
@@ -142,7 +151,9 @@ export class AppComponent {
     });</span>
   }
   sendTransferToServer( myCompanyPublicKey : string, solAmmount : number){
-    <span style="color:white">this.solWalletS.signTransfer(myCompanyPublicKey, solAmmount ).then( buffer => {
+    <span style="color:white">this.solWalletS.signTransfer(myCompanyPublicKey, solAmmount, signedByUserCallback => {
+        //Do something like puting a loading popup during solana's transfer verification
+    }).then( buffer => {
         this.httpClient.post('https://myserver.io/myAPI/makeTransfer', { transferRow : buffer }).subscribe( res => {
           console.log('Transfer successfully opered:', res.signature);
         });

@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { PhantomWallet } from './wallets/phantom.wallet';
 import { Wallet } from './wallets/wallet';
-import { Cluster } from '@solana/web3.js' ;
+import { Cluster, Commitment } from '@solana/web3.js' ;
+
 
 
 @Injectable({
@@ -19,6 +20,15 @@ export class SolWalletsService {
   }
   setCluster( cluster : Cluster ){
     Wallet.cluster = cluster ;
+  }
+  setCommitment( commitment : Commitment ){
+    Wallet.commitment = commitment ;
+  }
+  getPublicKey(){
+    if ( this.selected ){
+      return this.selected.publicKey ;
+    }
+    return null ;
   }
   /**
    * Open the wallet(s) of client
@@ -60,10 +70,11 @@ export class SolWalletsService {
    * Return a promise with a string signature.
    * @param destinationPubkey the address of the receiver
    * @param sols the ammount in SOLS to send from the client to the receiver
+   * @param signedByUser? optionnal: callbalck when user have signed the transaction in him wallet
    */
-  async signAndSendTransfer( destinationPubkey : string, sols : number ) : Promise<string | null | undefined> {
+  async signAndSendTransfer( destinationPubkey : string, sols : number, signedByUser? : CallableFunction ) : Promise<string | null | undefined> {
     await this.connect();
-    return this.selected!.signAndSendTransfer( destinationPubkey, sols );
+    return this.selected!.signAndSendTransfer( destinationPubkey, sols, signedByUser );
   }
   /**
    * !!DE<PRECIATED FUNCTION!!

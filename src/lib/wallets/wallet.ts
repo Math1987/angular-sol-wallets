@@ -3,7 +3,8 @@ import {
     clusterApiUrl,
     Cluster,
     PublicKey,
-    Transaction
+    Transaction,
+    Commitment
 }from "@solana/web3.js" ;
 
 
@@ -19,6 +20,7 @@ export class Wallet {
 
     static solanaConnection : Connection | null = null ;
     static cluster : Cluster = "devnet" ;
+    static commitment : Commitment = "finalized" ;
     static provider : any = null ;
     publicKey : PublicKey | null = null ;
     installed = false ;
@@ -48,11 +50,14 @@ export class Wallet {
     protected async sendTransfer( transaction : Transaction ): Promise<string> {
         return await Wallet.solanaConnection!.sendRawTransaction(transaction.serialize());
     }
-    async signAndSendTransfer( destinationPubkey: string, sols : number) : Promise<string> {
+    async signAndSendTransfer( destinationPubkey: string, sols : number, signedCallBack? : CallableFunction ) : Promise<string> {
         await this.connect();
         const transaction = await this.signTransfer(destinationPubkey, sols);
+        if (signedCallBack){
+            signedCallBack(transaction);
+        }
         const signature = await this.sendTransfer(transaction);
-        await Wallet.solanaConnection?.confirmTransaction(signature!, "singleGossip" )! ;
+        await Wallet.solanaConnection?.confirmTransaction(signature!, Wallet.commitment )! ;
         return signature ;
     }
 
