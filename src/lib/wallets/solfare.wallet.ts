@@ -6,30 +6,34 @@ import {
     LAMPORTS_PER_SOL
 } from "@solana/web3.js"
 
-export class PhantomWallet extends Wallet {
+import * as bs58 from "bs58" ;
+
+import * as web3 from "@solana/web3.js" ;
+
+export class SolflareWallet extends Wallet {
 
     constructor(){
         super();
-        this.icon = "https://gblobscdn.gitbook.com/spaces%2F-MVOiF6Zqit57q_hxJYp%2Favatar-1615495356537.png?alt=media" ;
-        this.name = "Phantom" ;
+        this.icon = 'https://lh3.googleusercontent.com/uKZnhWrko3Chg3GkcqPZdj7RqfY0_toJ6s7JLWVMvBFb63pICmRYRsURzknIyuN0MeVlBSdTzNMm72zx0nh7-gJp1w=w128-h128-e365-rj-sc0x00ffffff';
+        this.name = "Solflare" ;
         //@ts-ignore
-        if ( window.solana && window.solana.isPhantom ){
+        if ( window.solflare &&window.solflare?.isSolflare ){
             this.installed = true ;
-            localStorage.setItem('phantom', "installed");
-        }else if ( localStorage.getItem('phantom') ){
+            localStorage.setItem('solfare', "installed");
+        }else if ( localStorage.getItem('solfare') ){
             this.installed = true ;
         }
     }
     async connect() : Promise<Wallet> {
         await super.connect();
         //@ts-ignore
-        if ( Wallet.provider !== null || Wallet.provider !== window.solana ){
+        if ( Wallet.provider !== null || Wallet.provider !== window.solflare ){
             //@ts-ignore
-            await window.solana.connect();
+            await window.solflare.connect();
             //@ts-ignore
-            if ( window.solana.publicKey ){
+            if ( window.solflare.publicKey ){
                 //@ts-ignore
-                this.provider = window.solana ;
+                this.provider = window.solflare ;
                 //@ts-ignore
                 this.publicKey = new PublicKey(this.provider.publicKey) ;
             }
@@ -91,13 +95,9 @@ export class PhantomWallet extends Wallet {
     async signMessage(message : string ){
         const encodedMessage = new TextEncoder().encode(message);
         //@ts-ignore
-        const signedMessage = await this.provider.request({
-            method : "signMessage",
-            params : {
-                message : encodedMessage
-            }
-        });
-        return signedMessage.signature ;
+        const signedMessage = await this.provider.signMessage(encodedMessage, "utf8");
+        const signature = bs58.encode(signedMessage.signature) ;
+        return signature ;
     }
 
 

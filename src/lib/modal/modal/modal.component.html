@@ -1,0 +1,7 @@
+<div id="wallet-container" class="wallets-card">
+    <div *ngFor="let wallet of wallets ; let i = index" class="wallets-row" (click)="select(i)">
+        <img class="icon" [src]="wallet.icon" alt="">
+        <div class="name">{{wallet.name}}</div>
+    </div>
+</div>
+

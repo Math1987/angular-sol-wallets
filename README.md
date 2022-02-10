@@ -2,25 +2,25 @@
 ## Library for Web Wallets on Solana Blockchain
 
 <em>
-<p> news on 0.0.12
+<p> news on 0.0.13
   <ul>
-    <li style="color:darkgreen">Add <strong>setCommitment</strong> set the commitment for the transfers</li>
-    <li style="color:darkgreen">Add an optional callback function in<strong> signAndSendTransfer</strong> used before verification of transfer when user have signed it</li>
-    <li style="color:darkgreen">Add <strong>getPublicKey</strong> to get the PublicKey object dirrectly from the service</li>
-    <li>commitment is set as "finalized" instead of "singleGossip"</li>
-    <li style="color:darkred">Depreciate <em>sendTransaction</em>, use <em>signAndSendTransfer</em> instead</li>
+    <li style="color:darkgreen">Add Solflare Wallet</li>
+    <li style="color:darkgreen">Add customisable popup with wallets</li>
   </ul>
 </em>
 </p>
 <p>
-<strong>Only Phantom is implemented</strong> 
 <br>
 This library was generated with <a href= "https://github.com/angular/angular-cli">Angular CLI</a> version 12.1.0.
 </p>
 
 ## DESCRIPTION
+
 <h3>
 Provide a service for using easily wallets on your web Angular project:
+
+![alt text](screenshoot.png)
+
 <br><em>overview of all (async) functions:</em>
 <br>
 </h3>
@@ -164,6 +164,49 @@ export class AppComponent {
   }
 </pre>
 
+### 4- customize 
+You can customize the style of the popup, like so: 
+<br>
+![alt text](screenshoot-custom.png)
+<br>
+<pre>
+  constructor(
+    private solWalletS : SolWalletsService
+    ){
+      this.solWalletS.setCustomClasses({ 
+        card : "myCard",
+        wallets : "myWallets"
+      });
+</pre>
+<br>
+the css: 
+<pre>
+.myCard{
+    font-family: Impact ;
+    background-color: darkblue ;
+    border : 1px solid black ;
+    border-radius: 3px ;    
+    color : white ;
+    padding : 5px ;
+    min-width: 200px ;
+}
+.myWallets{
+    display : flex ;
+    flex-flow: row nowrap ;
+    background-color: lightblue ;
+    border : 1px solid black ;
+    border-radius: 3px ;
+    margin : 3px ;
+    padding : 3px ;
+    align-items : center ;
+    justify-content: center ;
+    cursor : pointer ;
+    transition : 0.5s ;
+}
+.myWallets:hover{
+    transform : scale(1.05,1.05);
+}
+</pre>
 
 
 ### 4- production

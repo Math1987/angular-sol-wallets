@@ -8,13 +8,6 @@ import {
 }from "@solana/web3.js" ;
 
 
-const testTimeOut = () : Promise<any> => { 
-    return new Promise( (resolve, reject) => {
-        setTimeout(() =>{
-            resolve(true);
-        }, 3000 );
-    });
-};
 
 export class Wallet {
 
@@ -35,9 +28,6 @@ export class Wallet {
         return this ;
     }
     async disconnect(): Promise<boolean> {
-        //@ts-ignore
-        await Wallet.provider.disconnect();
-        Wallet.provider = null ;
         return true ;
     }
     async signMessage(message : string ) : Promise<string | null | undefined>{

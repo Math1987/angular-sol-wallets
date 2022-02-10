@@ -1,8 +1,10 @@
-import { Injectable } from '@angular/core';
+import { ApplicationRef, ComponentFactoryResolver, EmbeddedViewRef, Injectable, Injector } from '@angular/core';
 import { PhantomWallet } from './wallets/phantom.wallet';
+import { SolflareWallet } from './wallets/solfare.wallet';
+
 import { Wallet } from './wallets/wallet';
 import { Cluster, Commitment } from '@solana/web3.js' ;
-
+import { ModalComponent } from './modal/modal/modal.component';
 
 
 @Injectable({
@@ -13,9 +15,17 @@ export class SolWalletsService {
   wallets : Wallet[] = [] ;
   selected : Wallet | null = null ;
 
-  constructor() {
+  classes : { card? : string, wallets? : string } = {} ;
+
+
+  constructor(
+    private componentFactoryResolver: ComponentFactoryResolver,
+    private appRef: ApplicationRef,
+    private injector: Injector
+  ) {
       document.addEventListener('DOMContentLoaded', () => {
         this.wallets.push(new PhantomWallet());
+        this.wallets.push(new SolflareWallet());
       });
   }
   setCluster( cluster : Cluster ){
@@ -24,6 +34,11 @@ export class SolWalletsService {
   setCommitment( commitment : Commitment ){
     Wallet.commitment = commitment ;
   }
+  setCustomClasses( classes : { card? : string, title? : string, wallets? : string}){
+      this.classes = classes ;
+  }
+
+
   getPublicKey(){
     if ( this.selected ){
       return this.selected.publicKey ;
@@ -34,14 +49,84 @@ export class SolWalletsService {
    * Open the wallet(s) of client
    * @returns a promise with the Wallet selected by the user
    */
-  async connect() : Promise<Wallet> {
-      this.selected = this.wallets[0] ;
-      await this.wallets[0].connect();
-      return this.selected ;
+  connect() : Promise<Wallet> {
+    return new Promise((resolve, reject) => {
+
+      if ( this.wallets.length > 0 && this.selected === null ){
+
+        const modalComponent = this.componentFactoryResolver
+        .resolveComponentFactory(ModalComponent)
+        .create(this.injector);
+
+        this.appRef.attachView(modalComponent.hostView);
+
+        const domElem = (modalComponent.hostView as EmbeddedViewRef<any>)
+          .rootNodes[0] as HTMLElement;
+          
+          if ( this.classes.card ){
+            const card = domElem.querySelector('#wallet-container') as HTMLDivElement;
+            card.className = this.classes.card ;
+          }
+          if ( this.classes.wallets ){
+            const card = domElem.querySelector('#wallet-container') as HTMLDivElement;
+            card.addEventListener('DOMNodeInserted', elem => {
+              //@ts-ignore 
+              elem.target.className = this.classes.wallets ;
+            });
+          }
+
+        modalComponent.instance.wallets = this.wallets.filter( w => {
+          if ( w.installed ){
+            return true ;
+          }
+          return false ;
+        });
+
+        modalComponent.instance.quitEvent.subscribe( () => {
+
+          this.appRef.detachView(modalComponent.hostView);
+          modalComponent.destroy();
+
+        });
+
+        modalComponent.instance.selectEvent.subscribe( selectedWallet => {
+
+          this.disconnect().finally( () => {
+
+            selectedWallet.connect().then( res => {
+
+              this.appRef.detachView(modalComponent.hostView);
+              modalComponent.destroy();
+              this.selected = selectedWallet ;
+              resolve(selectedWallet) ;
+  
+            });
+
+          });
+
+        });
+        document.body.appendChild(domElem);
+
+      }else if ( this.wallets.length === 1 && this.selected === null ){
+
+        this.selected = this.wallets[0] ;
+        this.wallets[0].connect().then( w => {
+          resolve(this.selected!) ;
+        });
+        
+      }else{
+        resolve(this.selected!);
+      }
+
+
+    });
+
   }
   async disconnect(){
     if ( this.selected ){
-      return this.selected.disconnect();
+      this.selected.disconnect();
+      this.selected = null ;
+      return true ;
     }
     throw Error('No wallet selected.');
   }
