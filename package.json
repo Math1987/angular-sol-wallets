@@ -18,10 +18,15 @@
     "solana",
     "angular",
     "phantom",
+<<<<<<< HEAD
     "solflare",
     "wallets"
   ],
   "devDependencies": {
     "@types/bs58": "^4.0.1"
   }
+=======
+    "wallets"
+  ]
+>>>>>>> wip
 }
