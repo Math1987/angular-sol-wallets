@@ -3,7 +3,7 @@ import { PhantomWallet } from './wallets/phantom.wallet';
 import { SolflareWallet } from './wallets/solfare.wallet';
 
 import { Wallet } from './wallets/wallet';
-import { Cluster, Commitment } from '@solana/web3.js' ;
+import { Cluster, Commitment, Transaction } from '@solana/web3.js' ;
 import { ModalComponent } from './modal/modal/modal.component';
 
 
@@ -15,7 +15,7 @@ export class SolWalletsService {
   wallets : Wallet[] = [] ;
   selected : Wallet | null = null ;
 
-  classes : { card? : string, wallets? : string } = {} ;
+  classes : { background? : string, card? : string, wallets? : string } = {} ;
 
 
   constructor(
@@ -24,8 +24,24 @@ export class SolWalletsService {
     private injector: Injector
   ) {
       document.addEventListener('DOMContentLoaded', () => {
-        this.wallets.push(new PhantomWallet());
-        this.wallets.push(new SolflareWallet());
+
+        const buildWallets = () => {
+          this.wallets.push(new PhantomWallet());
+          this.wallets.push(new SolflareWallet());
+        }
+
+        if (document.readyState === 'complete') {
+          buildWallets();
+        }else{
+          
+          function listener() {
+            window.removeEventListener('load', listener);
+            buildWallets();
+          }
+          window.addEventListener('load', listener);
+
+        }
+
       });
   }
   setCluster( cluster : Cluster ){
@@ -34,7 +50,7 @@ export class SolWalletsService {
   setCommitment( commitment : Commitment ){
     Wallet.commitment = commitment ;
   }
-  setCustomClasses( classes : { card? : string, title? : string, wallets? : string}){
+  setCustomClasses( classes : { background? : string, card? : string, wallets? : string}){
       this.classes = classes ;
   }
 
@@ -62,6 +78,10 @@ export class SolWalletsService {
 
         const domElem = (modalComponent.hostView as EmbeddedViewRef<any>)
           .rootNodes[0] as HTMLElement;
+
+          if ( this.classes.background ){
+            domElem.classList.add(this.classes.background);
+          }
           
           if ( this.classes.card ){
             const card = domElem.querySelector('#wallet-container') as HTMLDivElement;
@@ -150,6 +170,11 @@ export class SolWalletsService {
     await this.connect();
     return await (await this.selected!.signTransfer(destinationPubkey, sols)).serialize();
   }
+  async signTransaction( transaction : Transaction ) : Promise<Buffer> {
+    await this.connect();
+    return await ( await this.selected!.signTransaction(transaction)).serialize();
+  }
+
   /**
    * Create, send an wait for confirmation of a transfer transaction
    * Return a promise with a string signature.

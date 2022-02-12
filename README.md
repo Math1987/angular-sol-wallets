@@ -2,10 +2,11 @@
 ## Library for Web Wallets on Solana Blockchain
 
 <em>
-<p> news on 0.0.13
+<p> news on 0.0.14
   <ul>
     <li style="color:darkgreen">Add Solflare Wallet</li>
     <li style="color:darkgreen">Add customisable popup with wallets</li>
+    <li style="color:red">fix z-index to 99999 for popup</li>
   </ul>
 </em>
 </p>
@@ -174,6 +175,7 @@ You can customize the style of the popup, like so:
     private solWalletS : SolWalletsService
     ){
       this.solWalletS.setCustomClasses({ 
+        background : "myBcg",
         card : "myCard",
         wallets : "myWallets"
       });
@@ -205,6 +207,9 @@ the css:
 }
 .myWallets:hover{
     transform : scale(1.05,1.05);
+}
+.myBcg{
+    background-color: rgba(255,255,255,0.75) !important ;
 }
 </pre>
 

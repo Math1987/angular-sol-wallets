@@ -1,6 +1,6 @@
 {
   "name": "angular-sol-wallets",
-  "version": "0.0.13",
+  "version": "0.0.15",
   "peerDependencies": {
     "@angular/common": "^12.1.0",
     "@angular/core": "^12.1.0",
@@ -18,15 +18,10 @@
     "solana",
     "angular",
     "phantom",
-<<<<<<< HEAD
     "solflare",
     "wallets"
   ],
   "devDependencies": {
     "@types/bs58": "^4.0.1"
   }
-=======
-    "wallets"
-  ]
->>>>>>> wip
 }

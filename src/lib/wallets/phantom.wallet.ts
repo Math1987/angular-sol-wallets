@@ -12,10 +12,19 @@ export class PhantomWallet extends Wallet {
         super();
         this.icon = "https://gblobscdn.gitbook.com/spaces%2F-MVOiF6Zqit57q_hxJYp%2Favatar-1615495356537.png?alt=media" ;
         this.name = "Phantom" ;
+
+        console.log('build phantom');
+        //@ts-ignore
+        console.log("found?", window.solana.isPhantom)
+
         //@ts-ignore
         if ( window.solana && window.solana.isPhantom ){
             this.installed = true ;
             localStorage.setItem('phantom', "installed");
+
+            //@ts-ignore
+            window.solana.on("connect", () => console.log("a Phantom wallet is connected!"));
+
         }else if ( localStorage.getItem('phantom') ){
             this.installed = true ;
         }
