@@ -5,10 +5,8 @@ import {
     SystemProgram,
     LAMPORTS_PER_SOL
 } from "@solana/web3.js"
-
 import * as bs58 from "bs58" ;
 
-import * as web3 from "@solana/web3.js" ;
 
 export class SolflareWallet extends Wallet {
 
@@ -19,13 +17,54 @@ export class SolflareWallet extends Wallet {
         //@ts-ignore
         if ( window.solflare &&window.solflare?.isSolflare ){
             this.installed = true ;
-            localStorage.setItem('solfare', "installed");
-        }else if ( localStorage.getItem('solfare') ){
+            localStorage.setItem('solflare', "installed");
+        }else if ( localStorage.getItem('solflare') ){
             this.installed = true ;
         }
     }
+    async disconnect(){
+        //@ts-ignore
+        await window.solflare.request({ method: "disconnect" });
+        return true ;
+    }
+
+    static async create(){
+
+        const solflareWallet = new SolflareWallet();
+        //@ts-ignore
+        if ( window.solflare ){
+            
+            solflareWallet.installed = true ;
+            localStorage.setItem('solflare', "installed");
+
+
+
+        }else if ( localStorage.getItem('solflare') ){
+            solflareWallet.installed = true ;
+        }
+        return solflareWallet ;
+
+    }
+    private stakeConnection(){
+        //@ts-ignore
+        this.provider = window.solflare ;
+        //@ts-ignore
+        this.publicKey = new PublicKey(this.provider.publicKey) ;
+        this.connected = true ;
+    } 
+
     async connect() : Promise<Wallet> {
         await super.connect();
+
+
+        try{
+            //@ts-ignore
+            await window.solflare.connect({ onlyIfTrusted : true });
+            this.stakeConnection();
+        }catch(e){
+
+        }
+
         //@ts-ignore
         if ( Wallet.provider !== null || Wallet.provider !== window.solflare ){
             //@ts-ignore

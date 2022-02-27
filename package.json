@@ -1,6 +1,6 @@
 {
   "name": "angular-sol-wallets",
-  "version": "0.0.15",
+  "version": "0.0.19",
   "peerDependencies": {
     "@angular/common": "^12.1.0",
     "@angular/core": "^12.1.0",

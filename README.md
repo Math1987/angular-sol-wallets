@@ -2,11 +2,10 @@
 ## Library for Web Wallets on Solana Blockchain
 
 <em>
-<p> news on 0.0.14
+<p> news on 0.0.19
   <ul>
-    <li style="color:darkgreen">Add Solflare Wallet</li>
-    <li style="color:darkgreen">Add customisable popup with wallets</li>
-    <li style="color:red">fix z-index to 99999 for popup</li>
+    <li style="color:darkred">fix: launch wallets only when ask connection</li>
+    <li style="color:darkgreen">feat: setEnabledWallets: choose all wallets you want to use. if there is only one wallet enabled, popup will not be displayed.</li>
   </ul>
 </em>
 </p>
@@ -22,7 +21,7 @@ Provide a service for using easily wallets on your web Angular project:
 
 ![alt text](screenshoot.png)
 
-<br><em>overview of all (async) functions:</em>
+<br><em>overview of all features:</em>
 <br>
 </h3>
 <br>
@@ -36,14 +35,20 @@ signMessage( message : string) => signature (as string)
 <br>
 signTransfer( address : string, sols : number) => Buffer
 <br>
-signAndSendTransfer( address : string, sols : number, signedByUser? : CallableFunction ) => signature (as string) => signature (as string)
+signAndSendTransfer( address : string, sols : number, signedByUser? : CallableFunction ) => signature (as string) 
+<br>
+signTransaction( transaction : Transaction ) => signature (as string) => signature (as string)
 <br>
 <br>
 setCluster( cluster : Cluster ) <em>default = "devnet"</em>
 <br>
 setCommitment( commitment : Commitment ) <em>default = "finalized"</em>
 <br>
+setEnabledWallets( wallets : AvalableWallets[] )
+<br>
 getPublicKey() => PublicKey
+<br><br>
+autoConnect : boolean
 
 </span>
 </p>
@@ -165,7 +170,35 @@ export class AppComponent {
   }
 </pre>
 
-### 4- customize 
+### 4- options / parameters
+<borld>Autoconnect:</bold>
+<br>Set autoconnect as true on WalletsService make the last wallet used by the client automatically re-connected
+<br>(this avoid the user to have to choose again a wallet when making actions with service)
+<br>Example of usage in the App constructor :
+<pre><code>
+  constructor(
+    private solWalletS : SolWalletsService
+    ){
+      this.solWalletS.autoConnect = true ;
+      this.solWalletS.wallet.subscribe( wallet => {
+        console.log('the last wallet used by the client is automatically connected without any actions.' );
+      })
+  }
+</code></pre>
+
+<borld>SetEnabledWallets:</bold>
+<br>Choose the wallets you want to use.
+<br>By default all the wallets are enabled.
+<pre><code>
+  constructor(
+    private solWalletS : SolWalletsService
+    ){
+      this.solWalletS.setEnabledWallets(["Phantom"]);
+  }
+</code></pre>
+
+
+### 5- customize 
 You can customize the style of the popup, like so: 
 <br>
 ![alt text](screenshoot-custom.png)
@@ -214,7 +247,7 @@ the css:
 </pre>
 
 
-### 4- production
+### 6- production
 sol-wallet use **devnet** Cluster by default
 In production you can use the **mainnet-beta** like this exemple in the appComponent:
 <pre>

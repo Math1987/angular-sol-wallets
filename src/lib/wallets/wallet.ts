@@ -8,7 +8,7 @@ import {
     Blockhash
 }from "@solana/web3.js" ;
 
-
+export type AvalableWallets = "Phantom" | "Solflare" ;
 
 export class Wallet {
 
@@ -18,6 +18,7 @@ export class Wallet {
     static provider : any = null ;
     publicKey : PublicKey | null = null ;
     installed = false ;
+    connected = false ;
     icon : string = "" ;
     name : string = "" ;
 
@@ -29,6 +30,10 @@ export class Wallet {
         return this ;
     }
     async disconnect(): Promise<boolean> {
+        if ( Wallet.provider ){
+            Wallet.provider.disconnect();
+            this.connected = false ;
+        }
         return true ;
     }
     async signMessage(message : string ) : Promise<string | null | undefined>{

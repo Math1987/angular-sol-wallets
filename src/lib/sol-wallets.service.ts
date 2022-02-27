@@ -2,9 +2,10 @@ import { ApplicationRef, ComponentFactoryResolver, EmbeddedViewRef, Injectable, 
 import { PhantomWallet } from './wallets/phantom.wallet';
 import { SolflareWallet } from './wallets/solfare.wallet';
 
-import { Wallet } from './wallets/wallet';
+import { Wallet, AvalableWallets } from './wallets/wallet';
 import { Cluster, Commitment, Transaction } from '@solana/web3.js' ;
 import { ModalComponent } from './modal/modal/modal.component';
+import { ReplaySubject } from 'rxjs';
 
 
 @Injectable({
@@ -12,9 +13,14 @@ import { ModalComponent } from './modal/modal/modal.component';
 })
 export class SolWalletsService {
 
-  wallets : Wallet[] = [] ;
-  selected : Wallet | null = null ;
+  private walletsReady : ReplaySubject<boolean> = new ReplaySubject<boolean>();
 
+  autoConnect : boolean = false ;
+
+  wallet : ReplaySubject<Wallet | null> = new ReplaySubject<Wallet | null>();
+  wallets : Wallet[] = [] ;
+  enabledWallets : AvalableWallets[] = ["Phantom", "Solflare"];
+  selected : Wallet | null = null ;
   classes : { background? : string, card? : string, wallets? : string } = {} ;
 
 
@@ -23,27 +29,69 @@ export class SolWalletsService {
     private appRef: ApplicationRef,
     private injector: Injector
   ) {
-      document.addEventListener('DOMContentLoaded', () => {
 
-        const buildWallets = () => {
-          this.wallets.push(new PhantomWallet());
-          this.wallets.push(new SolflareWallet());
-        }
+    this.wallet.subscribe( w => {
+      this.selected = w ;
+    });
 
-        if (document.readyState === 'complete') {
+
+    document.addEventListener('DOMContentLoaded', () => {
+
+      const buildWallets = async () => {
+        setTimeout(() => {
+            this.initWallets();
+        },0);
+      }
+      if (document.readyState === 'complete') {
+        buildWallets();
+      }else{
+        function listener() {
+          window.removeEventListener('load', listener);
           buildWallets();
-        }else{
-          
-          function listener() {
-            window.removeEventListener('load', listener);
-            buildWallets();
-          }
-          window.addEventListener('load', listener);
-
         }
+        window.addEventListener('load', listener);
+      }
 
-      });
+    });
+
   }
+
+  async initWallets(){
+
+    if ( this.enabledWallets.filter( n => n === "Phantom").length >= 1 ){
+      this.wallets.push(await PhantomWallet.create());
+    }
+    if ( this.enabledWallets.filter( n => n === "Solflare").length >= 1 ){
+      this.wallets.push(await SolflareWallet.create());
+    }
+
+
+    const connecteds = this.wallets.filter( w => w.connected );
+    if ( connecteds.length >= 1 && this.autoConnect ){
+      if ( localStorage.getItem("selected-wallet") ){
+        try{
+          const wallet = this.wallets.filter( w => w.name === localStorage.getItem("selected-wallet") )[0] ;
+          this.selectWallet(wallet);
+          wallet.connect();
+        }catch(e){
+          const wallet = connecteds[0] ;
+          this.selectWallet(wallet);
+          wallet.connect();
+        }
+      }
+    }
+    this.walletsReady.next(true);
+  }
+
+  private selectWallet(wallet : Wallet | null){
+    this.wallet.next(wallet);
+    if ( wallet ){
+      localStorage.setItem('selected-wallet', wallet!.name );
+    }else{
+      localStorage.removeItem('selected-wallet');
+    }
+  }
+
   setCluster( cluster : Cluster ){
     Wallet.cluster = cluster ;
   }
@@ -52,6 +100,9 @@ export class SolWalletsService {
   }
   setCustomClasses( classes : { background? : string, card? : string, wallets? : string}){
       this.classes = classes ;
+  }
+  setEnabledWallets( wallets : AvalableWallets[] ){
+    this.enabledWallets = wallets ;
   }
 
 
@@ -68,75 +119,78 @@ export class SolWalletsService {
   connect() : Promise<Wallet> {
     return new Promise((resolve, reject) => {
 
-      if ( this.wallets.length > 0 && this.selected === null ){
+      this.walletsReady.subscribe( ready => {
 
-        const modalComponent = this.componentFactoryResolver
-        .resolveComponentFactory(ModalComponent)
-        .create(this.injector);
+        const wallets = this.wallets
+        .filter( w => w.installed )
+        .filter( w => this.enabledWallets.filter( e => e === w.name).length >= 1 ) ;
 
-        this.appRef.attachView(modalComponent.hostView);
 
-        const domElem = (modalComponent.hostView as EmbeddedViewRef<any>)
-          .rootNodes[0] as HTMLElement;
+        if ( wallets.length > 1 && this.selected === null ){
 
-          if ( this.classes.background ){
-            domElem.classList.add(this.classes.background);
-          }
-          
-          if ( this.classes.card ){
-            const card = domElem.querySelector('#wallet-container') as HTMLDivElement;
-            card.className = this.classes.card ;
-          }
-          if ( this.classes.wallets ){
-            const card = domElem.querySelector('#wallet-container') as HTMLDivElement;
-            card.addEventListener('DOMNodeInserted', elem => {
-              //@ts-ignore 
-              elem.target.className = this.classes.wallets ;
-            });
-          }
+          const modalComponent = this.componentFactoryResolver
+          .resolveComponentFactory(ModalComponent)
+          .create(this.injector);
 
-        modalComponent.instance.wallets = this.wallets.filter( w => {
-          if ( w.installed ){
-            return true ;
-          }
-          return false ;
-        });
+          this.appRef.attachView(modalComponent.hostView);
 
-        modalComponent.instance.quitEvent.subscribe( () => {
+          const domElem = (modalComponent.hostView as EmbeddedViewRef<any>)
+            .rootNodes[0] as HTMLElement;
 
-          this.appRef.detachView(modalComponent.hostView);
-          modalComponent.destroy();
+            if ( this.classes.background ){
+              domElem.classList.add(this.classes.background);
+            }
+            
+            if ( this.classes.card ){
+              const card = domElem.querySelector('#wallet-container') as HTMLDivElement;
+              card.className = this.classes.card ;
+            }
+            if ( this.classes.wallets ){
+              const card = domElem.querySelector('#wallet-container') as HTMLDivElement;
+              card.addEventListener('DOMNodeInserted', elem => {
+                //@ts-ignore 
+                elem.target.className = this.classes.wallets ;
+              });
+            }
 
-        });
+          modalComponent.instance.wallets = wallets ;
 
-        modalComponent.instance.selectEvent.subscribe( selectedWallet => {
+          modalComponent.instance.quitEvent.subscribe( () => {
 
-          this.disconnect().finally( () => {
-
-            selectedWallet.connect().then( res => {
-
-              this.appRef.detachView(modalComponent.hostView);
-              modalComponent.destroy();
-              this.selected = selectedWallet ;
-              resolve(selectedWallet) ;
-  
-            });
+            this.appRef.detachView(modalComponent.hostView);
+            modalComponent.destroy();
 
           });
 
-        });
-        document.body.appendChild(domElem);
+          modalComponent.instance.selectEvent.subscribe( selectedWallet => {
 
-      }else if ( this.wallets.length === 1 && this.selected === null ){
+            this.disconnect().finally( () => {
 
-        this.selected = this.wallets[0] ;
-        this.wallets[0].connect().then( w => {
-          resolve(this.selected!) ;
-        });
-        
-      }else{
-        resolve(this.selected!);
-      }
+              selectedWallet.connect().then( res => {
+
+                this.appRef.detachView(modalComponent.hostView);
+                modalComponent.destroy();
+                this.selectWallet(selectedWallet)
+                resolve(selectedWallet) ;
+    
+              });
+
+            });
+
+          });
+          document.body.appendChild(domElem);
+
+        }else if ( wallets.length === 1 && this.selected === null ){
+
+          this.selectWallet(wallets[0]);
+          wallets[0].connect().then( w => {
+            resolve(this.selected!) ;
+          });
+          
+        }else{
+          resolve(this.selected!);
+        }
+      });
 
 
     });
@@ -145,7 +199,7 @@ export class SolWalletsService {
   async disconnect(){
     if ( this.selected ){
       this.selected.disconnect();
-      this.selected = null ;
+      await this.selectWallet(null) ;
       return true ;
     }
     throw Error('No wallet selected.');
@@ -156,7 +210,9 @@ export class SolWalletsService {
    * @returns a promise with the message signature.
    */
   async signMessage( message : string ) : Promise<string | null | undefined> {
-    await this.connect();
+    if ( !this.selected ){
+      await this.connect();
+    }
     let signature =  this.selected!.signMessage( message ); ;
     return signature ;
   }
@@ -167,12 +223,25 @@ export class SolWalletsService {
    * @returns a promise with a buffer of the serialized transaction.
    */
   async signTransfer( destinationPubkey : string, sols : number ) : Promise<Buffer> {
-    await this.connect();
+    if ( !this.selected ){
+      await this.connect();
+    }
     return await (await this.selected!.signTransfer(destinationPubkey, sols)).serialize();
   }
+  /**
+   * Create a client-side signature of your custom solana transaction.
+   * @param transaction 
+   * @returns signature
+   */
   async signTransaction( transaction : Transaction ) : Promise<Buffer> {
-    await this.connect();
-    return await ( await this.selected!.signTransaction(transaction)).serialize();
+    if ( !this.selected ){
+      await this.connect();
+    }
+    if ( this.selected ){
+      return await ( await this.selected!.signTransaction(transaction)).serialize();
+    }else{
+      throw Error("No wallet connected.");
+    }
   }
 
   /**
@@ -183,7 +252,9 @@ export class SolWalletsService {
    * @param signedByUser? optionnal: callbalck when user have signed the transaction in him wallet
    */
   async signAndSendTransfer( destinationPubkey : string, sols : number, signedByUser? : CallableFunction ) : Promise<string | null | undefined> {
-    await this.connect();
+    if ( !this.selected ){
+      await this.connect();
+    }
     return this.selected!.signAndSendTransfer( destinationPubkey, sols, signedByUser );
   }
   /**
@@ -193,7 +264,9 @@ export class SolWalletsService {
    * @returns 
    */
   async sendTransaction( destinationPubkey : string, sols : number ) : Promise<string | null | undefined> {
-    await this.connect();
+    if ( !this.selected ){
+      await this.connect();
+    }
     return this.selected!.sendTransaction(destinationPubkey, sols) ;
   }
   

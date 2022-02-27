@@ -8,42 +8,60 @@ import {
 
 export class PhantomWallet extends Wallet {
 
+    static async create(){
+
+        const phantomWallet = new PhantomWallet();
+        //@ts-ignore
+        if ( window.solana && window.solana.isPhantom ){
+            
+            phantomWallet.installed = true ;
+            localStorage.setItem('phantom', "installed");
+
+
+        }else if ( localStorage.getItem('phantom') ){
+            phantomWallet.installed = true ;
+        }
+        return phantomWallet ;
+
+    }
+
+    
     constructor(){
         super();
         this.icon = "https://gblobscdn.gitbook.com/spaces%2F-MVOiF6Zqit57q_hxJYp%2Favatar-1615495356537.png?alt=media" ;
         this.name = "Phantom" ;
-
-        console.log('build phantom');
-        //@ts-ignore
-        console.log("found?", window.solana.isPhantom)
-
-        //@ts-ignore
-        if ( window.solana && window.solana.isPhantom ){
-            this.installed = true ;
-            localStorage.setItem('phantom', "installed");
-
-            //@ts-ignore
-            window.solana.on("connect", () => console.log("a Phantom wallet is connected!"));
-
-        }else if ( localStorage.getItem('phantom') ){
-            this.installed = true ;
-        }
     }
+    private stakeConnection(){
+        //@ts-ignore
+        this.provider = window.solana ;
+        //@ts-ignore
+        this.publicKey = new PublicKey(this.provider.publicKey) ;
+        this.connected = true ;
+    } 
     async connect() : Promise<Wallet> {
         await super.connect();
+
+        try{
+            //@ts-ignore
+            await window.solana.connect({ onlyIfTrusted : true });
+            this.stakeConnection();
+
+        }catch(e){
+
+        }
+
         //@ts-ignore
         if ( Wallet.provider !== null || Wallet.provider !== window.solana ){
             //@ts-ignore
             await window.solana.connect();
-            //@ts-ignore
-            if ( window.solana.publicKey ){
-                //@ts-ignore
-                this.provider = window.solana ;
-                //@ts-ignore
-                this.publicKey = new PublicKey(this.provider.publicKey) ;
-            }
+            this.stakeConnection();
         }
         return this ;
+    }
+    async disconnect(){
+        //@ts-ignore
+        await window.solana.request({ method: "disconnect" });
+        return true ;
     }
     
 
